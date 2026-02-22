@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Monitor | Task 5</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="bg-obsidian">
+
+    <div class="container-fluid py-4">
+        <header class="d-flex justify-content-between align-items-center mb-5 border-bottom border-amber pb-3">
+            <div>
+                <h2 class="text-amber fw-bold m-0">COGNIFYZ_SYS_MONITOR</h2>
+                <small class="text-secondary tracking-widest">RESTFUL API INTERFACE v3.0</small>
+            </div>
+            <div class="text-end">
+                <div class="text-amber small fw-bold">LATENCY: <span id="ping">12ms</span></div>
+                <div class="text-success small fw-bold">SERVER: ONLINE</div>
+            </div>
+        </header>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="tech-card p-4">
+                    <h5 class="text-amber mb-4 border-start border-3 border-amber ps-2">REGISTER_RESOURCE</h5>
+                    <div class="input-group">
+                        <input type="text" id="resInput" class="tech-input" placeholder="Enter Resource Name...">
+                        <button onclick="registerResource()" class="btn-amber">EXECUTE_POST</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="tech-card p-4">
+                    <h5 class="text-white mb-4 border-start border-3 border-secondary ps-2">LIVE_REGISTRY_FEED</h5>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover border-secondary">
+                            <thead>
+                                <tr class="text-amber small">
+                                    <th>UID</th>
+                                    <th>RESOURCE_NAME</th>
+                                    <th>STATUS</th>
+                                    <th>ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registryBody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch and Display Data
+        async function fetchRegistry() {
+            const res = await fetch('/api/resources');
+            const data = await res.json();
+            const body = document.getElementById('registryBody');
+            body.innerHTML = '';
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'align-middle animate-fade';
+                row.innerHTML = `
+                    <td class="text-secondary font-mono">${item.id}</td>
+                    <td class="text-white fw-bold">${item.resource}</td>
+                    <td><span class="badge ${item.status === 'ACTIVE' ? 'bg-success' : 'bg-warning'} text-black">${item.status}</span></td>
+                    <td><button onclick="deleteResource(${item.id})" class="btn-delete">DECOMMISSION</button></td>
+                `;
+                body.appendChild(row);
+            });
+        }
+
+        async function registerResource() {
+            const name = document.getElementById('resInput').value;
+            if(!name) return;
+
+            await fetch('/api/resources', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ resource: name })
+            });
+
+            document.getElementById('resInput').value = '';
+            fetchRegistry();
+        }
+
+        async function deleteResource(id) {
+            await fetch(`/api/resources/${id}`, { method: 'DELETE' });
+            fetchRegistry();
+        }
+
+        fetchRegistry(); // Initial load
+    </script>
+</body>
+</html>
