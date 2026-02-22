@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Access | Cognifyz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="bg-black">
+    <div class="container d-flex align-items-center justify-content-center vh-100">
+        <div class="elite-card p-5 animate-reveal" style="max-width: 450px; width: 100%;">
+            <h2 class="text-white fw-bold mb-4 border-bottom border-cyan pb-2">SECURE ACCESS</h2>
+            <form action="/login" method="POST">
+                <div class="mb-3">
+                    <label class="text-cyan small fw-bold">OPERATOR NAME</label>
+                    <input type="text" name="name" class="elite-input" placeholder="Full Name" required>
+                </div>
+                <div class="mb-4">
+                    <label class="text-cyan small fw-bold">ENCRYPTED EMAIL</label>
+                    <input type="email" name="email" class="elite-input" placeholder="user@system.com" required>
+                </div>
+                <button type="submit" class="btn-cyan-glow w-100 py-3 fw-bold">INITIALIZE SESSION</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
