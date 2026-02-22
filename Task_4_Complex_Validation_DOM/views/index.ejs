@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Terminal | Cognifyz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #000; color: #fff; font-family: 'Consolas', monospace; }
+        .elite-card { background: #0a0a0b; border: 1px solid #333; border-radius: 8px; padding: 30px; }
+        .text-cyan { color: #00F2FF !important; }
+        .elite-input { background: #000; border: 1px solid #444; color: #fff; padding: 12px; width: 100%; margin-bottom: 10px; }
+        .elite-input:focus { border-color: #00F2FF; outline: none; box-shadow: 0 0 10px #00F2FF; }
+        .btn-cyan { background: #00F2FF; color: #000; font-weight: bold; border: none; padding: 15px; width: 100%; transition: 0.3s; }
+        .btn-cyan:disabled { opacity: 0.3; cursor: not-allowed; }
+        .condition { font-size: 0.85rem; margin-bottom: 5px; }
+        .log-entry { border-left: 3px solid #00F2FF; background: #111; padding: 15px; margin-bottom: 10px; animation: slideIn 0.5s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="display-4 fw-bold text-white mb-5">SYSTEM <span class="text-cyan">UPLINK</span></h1>
+        
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="elite-card">
+                    <h4 class="text-cyan mb-4">SECURITY MATRIX</h4>
+                    <form id="authForm">
+                        <label class="small fw-bold">OPERATOR NAME</label>
+                        <input type="text" id="name" class="elite-input" required>
+                        
+                        <label class="small fw-bold mt-3">ENCRYPTION KEY (Min 75%)</label>
+                        <input type="password" id="key" class="elite-input" oninput="runValidation()" required>
+                        
+                        <div class="progress bg-dark my-3" style="height: 10px;">
+                            <div id="pBar" class="progress-bar bg-danger" style="width: 0%"></div>
+                        </div>
+
+                        <div class="p-3 bg-black border border-secondary rounded mb-4">
+                            <div id="c-len" class="condition text-danger">✖ 8+ Characters</div>
+                            <div id="c-cap" class="condition text-danger">✖ Uppercase</div>
+                            <div id="c-num" class="condition text-danger">✖ Number</div>
+                            <div id="c-sym" class="condition text-danger">✖ Symbol</div>
+                        </div>
+
+                        <button type="submit" id="subBtn" class="btn-cyan" disabled>INITIALIZE DATA TRANSFER</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="elite-card h-100">
+                    <h4 class="text-white mb-4">LIVE SYSTEM LOGS</h4>
+                    <div id="logArea">
+                        <p class="text-muted">Awaiting secure connection...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStrength = 0;
+
+        function runValidation() {
+            const val = document.getElementById('key').value;
+            const checks = {
+                len: val.length >= 8,
+                cap: /[A-Z]/.test(val),
+                num: /[0-9]/.test(val),
+                sym: /[^A-Za-z0-9]/.test(val)
+            };
+
+            let passed = 0;
+            for (let id in checks) {
+                const el = document.getElementById('c-' + id);
+                if (checks[id]) {
+                    el.classList.replace('text-danger', 'text-success');
+                    el.innerText = el.innerText.replace('✖', '✔');
+                    passed++;
+                } else {
+                    el.classList.replace('text-success', 'text-danger');
+                    el.innerText = el.innerText.replace('✔', '✖');
+                }
+            }
+
+            currentStrength = passed * 25;
+            const bar = document.getElementById('pBar');
+            bar.style.width = currentStrength + "%";
+            bar.className = currentStrength >= 75 ? "progress-bar bg-success" : "progress-bar bg-danger";
+            
+            document.getElementById('subBtn').disabled = currentStrength < 75;
+        }
+
+        document.getElementById('authForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const res = await fetch('/api/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    name: document.getElementById('name').value, 
+                    strength: currentStrength 
+                })
+            });
+            const data = await res.json();
+            if(data.success) {
+                const log = document.getElementById('logArea');
+                if(log.querySelector('.text-muted')) log.innerHTML = '';
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `<b class="text-cyan">SUCCESS:</b> Operator <b>${data.name}</b> Uplink Established at ${data.timestamp}`;
+                log.prepend(entry);
+                document.getElementById('authForm').reset();
+                runValidation();
+            }
+        };
+    </script>
+</body>
+</html>
